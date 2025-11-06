@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ABR.LUCIA — Neon Landing</title>
+  <style>
+    /* Reset + layout */
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body{height:100%}
+    body{
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      display:flex;align-items:center;justify-content:center;min-height:100vh;color:#fff;
+      background:linear-gradient(180deg,#020617 0%,#00112a 50%,#1a0126 100%);
+      overflow:hidden;
+    }
+
+    /* Animated neon gradient background */
+    .bg-anim{
+      position:fixed;inset:0;z-index:-2;filter:blur(30px);
+      background:linear-gradient(120deg,#00102b,#0a2b8a,#ff2fa6,#00102b);
+      background-size:600% 600%;animation:slide 12s ease-in-out infinite;
+      opacity:0.9;
+    }
+    @keyframes slide{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+
+    /* Subtle moving star overlay */
+    .stars{position:fixed;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);background-size:40px 40px;opacity:0.12;animation:starsMove 40s linear infinite}
+    @keyframes starsMove{from{transform:translateY(0)}to{transform:translateY(-1000px)}}
+
+    /* Card */
+    .card{width:min(920px,94vw);padding:40px;border-radius:18px;display:grid;gap:20px;place-items:center;text-align:center;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow:0 8px 40px rgba(2,6,23,0.6);backdrop-filter: blur(6px)}
+
+    /* Neon heading */
+    .neon{
+      font-size:clamp(36px,8vw,96px);letter-spacing:6px;font-weight:800;text-transform:uppercase;
+      text-shadow: 0 0 6px rgba(255,255,255,0.06), 0 0 24px rgba(0,173,255,0.15), 0 0 60px rgba(255,0,150,0.08), 0 0 120px rgba(0,200,255,0.06);
+      color:transparent;background:linear-gradient(90deg,#7efcff 0%, #b66dff 50%, #ff79c6 100%);
+      -webkit-background-clip:text;background-clip:text;position:relative;
+    }
+    /* extra glow */
+    .neon::after{content:'';position:absolute;inset:0;filter:blur(10px);opacity:0.55}
+
+    /* Input group */
+    .input-row{display:flex;gap:12px;align-items:center}
+    input[type="text"]{padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);width:240px;font-size:16px;background:rgba(0,0,0,0.35);color:#fff;outline:none;box-shadow:inset 0 0 18px rgba(0,0,0,0.35)}
+    .btn{padding:12px 18px;border-radius:10px;border:2px solid rgba(255,255,255,0.06);background:transparent;color:#fff;font-weight:700;cursor:pointer;font-size:15px;position:relative}
+    .btn:active{transform:translateY(1px)}
+
+    /* Neon border on focus */
+    input[type="text"]:focus,.btn:focus{box-shadow:0 0 24px rgba(0,180,255,0.12);border-color:rgba(0,180,255,0.3)}
+
+    /* Hidden reveal message */
+    .message{margin-top:10px;padding:18px;border-radius:12px;background:rgba(255,255,255,0.02);min-height:120px;display:flex;flex-direction:column;gap:12px;align-items:center;justify-content:center;opacity:0;transform:translateY(8px);transition:all .45s cubic-bezier(.2,.9,.2,1)}
+    .message.visible{opacity:1;transform:translateY(0)}
+
+    .message .text{font-size:16px;max-width:760px;line-height:1.4;color:#fff;text-shadow:0 0 10px rgba(255,255,255,0.03)}
+
+    /* Neon styled quote */
+    .neon-quote{font-weight:700;padding:10px 16px;border-radius:8px;background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);text-shadow:0 0 12px rgba(255,20,80,0.08);}
+
+    /* Special neon text inside message */
+    .neon-text{font-family:monospace;font-size:15px;padding:6px 10px;border-radius:6px;background:rgba(0,0,0,0.35);text-shadow:0 0 12px #ff2fa6, 0 0 24px #00d0ff;color:#fff}
+
+    /* Heart animation */
+    .heart{font-size:46px;line-height:1;filter:drop-shadow(0 6px 20px rgba(255,0,100,0.5));transform-origin:center;animation:beat 1s ease-in-out infinite}
+    @keyframes beat{0%{transform:scale(1)}25%{transform:scale(1.15)}50%{transform:scale(1)}75%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+    /* small caption */
+    .hint{font-size:13px;color:rgba(255,255,255,0.5)}
+
+    /* responsive tweaks */
+    @media (max-width:520px){.input-row{flex-direction:column}.input-row input{width:100%}}
+  </style>
+</head>
+<body>
+  <div class="bg-anim" aria-hidden></div>
+  <div class="stars" aria-hidden></div>
+
+  <main class="card" role="main">
+    <h1 class="neon">ABR.LUCIA</h1>
+
+    <p class="hint">Animated neon landing. Type the secret number and click the button.</p>
+
+    <div class="input-row" aria-label="enter number">
+      <input id="secretInput" type="text" placeholder="Enter your number" aria-label="Enter your number" inputmode="numeric" />
+      <button class="btn" id="submitBtn">Enter your number</button>
+    </div>
+
+    <div class="message" id="messageBox" aria-live="polite">
+      <div class="heart" id="heart" style="display:none">❤️</div>
+      <div class="neon-quote neon-text" id="quoteText" style="display:none"></div>
+      <div class="text" id="plainText" style="display:none"></div>
+    </div>
+  </main>
+
+  <script>
+    // The secret code and the message to reveal (keeps exact content user provided)
+    const SECRET = '250827';
+    const RAW_MESSAGE = '<lucia,honestly, i want to tell you that i was impressed by you when you sent me your picture,but you said you didn,t want a boyfreind and i anlso don,t know if you also liked me. i am only telling you this to express my admiration , nothing more. now you can unfollow me if you want. and i will still remeber you >';
+
+    const input = document.getElementById('secretInput');
+    const btn = document.getElementById('submitBtn');
+    const box = document.getElementById('messageBox');
+    const heart = document.getElementById('heart');
+    const quoteText = document.getElementById('quoteText');
+    const plainText = document.getElementById('plainText');
+
+    function reveal(){
+      const val = input.value.trim();
+      if(val === SECRET){
+        // show message
+        box.classList.add('visible');
+        heart.style.display = 'block';
+        quoteText.style.display = 'block';
+        plainText.style.display = 'block';
+
+        // Put text in styled neon area and plain area
+        quoteText.textContent = RAW_MESSAGE;
+        plainText.textContent = '— message revealed';
+
+        // small sparkle effect on heading
+        document.querySelector('.neon').style.textShadow = '0 0 10px rgba(126,252,255,0.4), 0 0 40px rgba(182,109,255,0.18), 0 0 120px rgba(255,121,198,0.12)';
+
+        // modest confetti-lite using DOM particles (small and fast)
+        for(let i=0;i<18;i++){
+          const p = document.createElement('span');
+          p.textContent = '•';
+          p.style.position='fixed';
+          p.style.left = (50 + (Math.random()*60-30)) + '%';
+          p.style.top = (40 + Math.random()*30) + '%';
+          p.style.fontSize = (6 + Math.random()*18) + 'px';
+          p.style.opacity = '0.9';
+          p.style.transform = 'translateY(0)';
+          p.style.pointerEvents='none';
+          p.style.color = ['#ff2fa6','#00d0ff','#7efcff'][Math.floor(Math.random()*3)];
+          document.body.appendChild(p);
+          (function(el){
+            setTimeout(()=>{el.style.transition='all 900ms ease-out';el.style.top = (parseFloat(el.style.top) - 120 - Math.random()*100) + '%';el.style.opacity=0;},20);
+            setTimeout(()=>el.remove(),1100);
+          })(p);
+        }
+
+      } else {
+        box.classList.remove('visible');
+        heart.style.display = 'none';
+        quoteText.style.display = 'none';
+        plainText.style.display = 'none';
+      }
+    }
+
+    btn.addEventListener('click', reveal);
+    input.addEventListener('input', ()=>{
+      // live reveal if user types full secret
+      if(input.value.trim() === SECRET) reveal();
+    });
+
+    // allow Enter key to submit
+    input.addEventListener('keydown', (e)=>{if(e.key === 'Enter'){e.preventDefault(); reveal();}});
+  </script>
+</body>
+</html>
